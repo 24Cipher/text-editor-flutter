@@ -46,16 +46,35 @@ class _EditorState extends State<Editor> {
     return copiedFile.path.toString();
   }
 
-  _addNetWorkImg() {}
+  String dropdownValue = '%First_Name%';
+
+  Map<String, dynamic> dataMap = {
+    'First_Name': 'Harsh',
+    'Last_Name': 'Soni',
+    'Age': 20
+  };
+
+//(%[A-Za-z])\w+%
+
+  List<String> items = ['First_Name', 'Age', 'Last_Name'];
+
+  replaceAll(baseString) {
+    items.forEach((item) => baseString.replaceAll(
+        RegExp('$item'), dataMap[item.substring(1, item.length - 2)]));
+    return baseString;
+  }
 
   @override
   Widget build(BuildContext context) {
-    _reNavigate() => Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (ctx) => Home(
-                  textData: _controller.document.toPlainText(),
-                )));
+    _reNavigate() {
+      var data = _controller.document.toPlainText();
+      // var exp = data.print(exp);
+      // data = data.replaceAll(RegExp(r'(%[A-Za-z])\w+%'), 'Cipher');
+      data = replaceAll(data);
+      print(data);
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (ctx) => Home(textData: data)));
+    }
 
     _dialogShow() => showDialog<void>(
         context: context,
@@ -90,17 +109,39 @@ class _EditorState extends State<Editor> {
             Container(child: toolbar),
             Row(
               children: [
-                ElevatedButton(
-                    onPressed: () {
-                      _dialogShow();
-                      // AlertDialog(
-                      //     title: Text('Insert image url here'),
-                      //     content: TextField(
-                      //       controller: _txtController,
-                      //     ));
-                      // _addNetworkImg();
-                    },
-                    child: Text('Image Url')),
+                DropdownButton<String>(
+                  value: dropdownValue,
+                  icon: const Icon(Icons.arrow_downward),
+                  iconSize: 24,
+                  elevation: 16,
+                  onChanged: (String newValue) {
+                    setState(() {
+                      dropdownValue = newValue;
+                      _controller.document.insert(
+                          _controller.document.length == 0
+                              ? 0
+                              : _controller.document.length - 1,
+                          dropdownValue);
+                    });
+                  },
+                  items: items.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: '%$value%',
+                      child: Text(value),
+                    );
+                  }).toList(),
+                )
+                // ElevatedButton(
+                //     onPressed: () {
+                //       _dialogShow();
+                //       // AlertDialog(
+                //       //     title: Text('Insert image url here'),
+                //       //     content: TextField(
+                //       //       controller: _txtController,
+                //       //     ));
+                //       // _addNetworkImg();
+                //     },
+                //     child: Text('Image Url')),
               ],
             ),
             Divider(),
